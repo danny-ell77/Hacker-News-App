@@ -1,0 +1,3 @@
+celery -A app_hackernews worker -l INFO
+
+celery -A app_hackernews beat -l INFO

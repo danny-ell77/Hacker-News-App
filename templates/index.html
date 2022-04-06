@@ -1,0 +1,151 @@
+{% load static %}
+{% load crispy_forms_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <title>Django Stories</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .card {
+            border-radius: 4px;
+            background: #fff;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, .08), 0 0 6px rgba(0, 0, 0, .05);
+            transition: .3s transform cubic-bezier(.155, 1.105, .295, 1.12), .3s box-shadow, .3s -webkit-transform cubic-bezier(.155, 1.105, .295, 1.12);
+            cursor: pointer;
+
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, .12), 0 4px 8px rgba(0, 0, 0, .06);
+        }
+
+        h3 {
+            color: rgb(4, 83, 119);
+        }
+    </style>
+</head>
+
+<body>
+    <header class="site-header">
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+            <div class="container">
+                <a class="navbar-brand mr-4" href="/">Django Stories</a>
+                <button class=" navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle"
+                    aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarToggle">
+                    <div class="navbar-nav mr-auto">
+                        <a class="nav-item nav-link" href="">Home</a>
+                        <a class="nav-item nav-link" href="">About</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <section>
+        <div class="container">
+            <div class="d-flex flex-row py-5">
+                <div class="col-8 mx-auto mt-5">
+                    {% for item in stories %}
+                    <div class="card mb-5">
+                        <div style="padding:15px;">
+                            <h3 class="mt-3">{{item.title}}</h3>
+                            <pre>{{ item.text }}</pre>
+                            <i>by {{item.author}}</i><br>
+                            <a class="active btn btn-outline-info mt-3" href="{{item.url}}">Go to</a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <h4>No Stories today, sorry...</h4>
+                    {% endfor %}
+
+                    <div class="d-flex flex-row justify-content-center align-self-center">
+
+                        {% if stories.has_other_pages %}
+
+                        <ul class="pagination">
+
+                            {% if stories.has_previous %}
+                            <li class="page-item"><a class="btn btn-outline-dark mb-4"
+                                    data-page="{{stories.previous_page_number}}"
+                                    href="?page={{stories.previous_page_number}}" class="page-link">&laquo</a></li>
+
+                            <li class="page-item"><a class="btn btn-outline-dark mb-4" data-page="1" href="?page=1"
+                                    class="page-link">First</a></li>
+                            {% endif %}
+
+
+                            {% for i in stories.paginator.page_range %}
+                            {% if stories.number == i %}
+                            <li class="page-item"><a class="active btn btn-outline-dark mb-4">{{i}}</a></li>
+                            {% elif i > stories.number|add:'-5' and i < stories.number|add:'5' %} <a
+                                class="btn btn-outline-dark mb-4" href="?page={{ i }}">{{ i }}</a>
+                                {% endif %}
+
+                                {% endfor %}
+
+                                {% if stories.has_next %}
+                                <li class="page-item"><a class="btn btn-outline-dark mb-4"
+                                        data-page="{{stories.paginator.num_pages}}"
+                                        href="?page={{stories.paginator.num_pages}}" class="page-link">Last</a></li>
+
+                                <li class="page-item"><a class="btn btn-outline-dark mb-4"
+                                        data-page="{{stories.next_page_number}}"
+                                        href="?page={{stories.next_page_number}}" class="page-link">&raquo</a></li>
+                                {% endif %}
+                        </ul>
+
+                        {% endif %}
+                    </div>
+                </div>
+                <div style="padding-top: 50px;">
+                    <h4>Search for Stories</h4>
+                    <form id="searchForm" method="GET">
+                        {{storyFilter.form | crispy }}
+                        <input class="btn btn-primary" type="submit" value="search">
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </section>
+    <script type="text/javascript">
+        let searchForm = document.getElementById('searchForm')
+        let pageLinks = document.getElementsByClassName('page-link')
+
+        for (var i = 0; pageLinks.length > i; i++) {
+
+            pageLinks[i].addEventListener('click', function (e) {
+                e.preventDefault()
+                let page = this.dataset.page
+                console.log('Page:', page)
+                searchForm.innerHTML += `<input value="${page}" name="page" hidden >`
+                searchForm.submit()
+            })
+
+        }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous" />
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous" />
+</body>
+
+</html>
